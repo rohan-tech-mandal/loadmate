@@ -46,7 +46,18 @@ const vehicleSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    // Vehicle image URL
+    // Vehicle images
+    images: {
+      primary: {
+        url: String,
+        publicId: String, // Cloudinary public ID for deletion
+      },
+      gallery: [{
+        url: String,
+        publicId: String,
+      }],
+    },
+    // Legacy image field for backward compatibility
     image: {
       type: String,
     },

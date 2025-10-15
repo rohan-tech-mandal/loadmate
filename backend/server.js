@@ -10,6 +10,7 @@ import vehicleRoutes from './routes/vehicleRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import ownerRoutes from './routes/ownerRoutes.js';
+import imageRoutes from './routes/imageRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 import User from './models/User.js';
 
@@ -30,7 +31,6 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'https://loadmate-iota.vercel.app',
-  'https://loadmate-iota.vercel.app/',
   process.env.FRONTEND_URL,
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
 ].filter(Boolean);
@@ -174,6 +174,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/owner', ownerRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/images', imageRoutes);
 
 // Error handling middleware (must be after routes)
 app.use(notFound);
