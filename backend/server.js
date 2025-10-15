@@ -29,6 +29,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://loadmate-iota.vercel.app',
   process.env.FRONTEND_URL,
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
 ].filter(Boolean);
