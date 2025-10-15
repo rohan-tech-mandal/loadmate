@@ -62,14 +62,15 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Configure Google OAuth Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    },
+// Configure Google OAuth Strategy (only if environment variables are set)
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_CALLBACK_URL) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      },
     async (accessToken, refreshToken, profile, done) => {
       try {
         // Check if user already exists with this Google ID
@@ -108,7 +109,10 @@ passport.use(
       }
     }
   )
-);
+  );
+} else {
+  console.log('⚠️  Google OAuth not configured - environment variables missing');
+}
 
 // Serialize and deserialize user for session
 passport.serializeUser((user, done) => {
