@@ -4,6 +4,8 @@ import cors from 'cors';
 import passport from 'passport';
 import session from 'express-session';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import vehicleRoutes from './routes/vehicleRoutes.js';
@@ -17,6 +19,10 @@ import User from './models/User.js';
 // Load environment variables
 dotenv.config();
 
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Connect to MongoDB
 connectDB();
 
@@ -26,11 +32,13 @@ const app = express();
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
+// Serve static files (for local image storage)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // CORS configuration - allows frontend to communicate with backend
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://loadmate-iota.vercel.app',
   process.env.FRONTEND_URL,
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
 ].filter(Boolean);

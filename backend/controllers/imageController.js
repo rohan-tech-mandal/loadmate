@@ -1,4 +1,4 @@
-import { vehicleImageUpload, deleteImage, getImageUrl } from '../config/cloudinary.js';
+import { vehicleImageUpload, deleteImage, getImageUrl, isCloudinaryConfigured } from '../config/cloudinary.js';
 import Vehicle from '../models/Vehicle.js';
 
 // Upload vehicle image
@@ -32,8 +32,8 @@ export const uploadVehicleImage = async (req, res) => {
     }
 
     const imageData = {
-      url: req.file.path,
-      publicId: req.file.filename
+      url: isCloudinaryConfigured ? req.file.path : `${req.protocol}://${req.get('host')}/uploads/vehicles/${req.file.filename}`,
+      publicId: isCloudinaryConfigured ? req.file.filename : req.file.filename
     };
 
     // Update vehicle with new image
@@ -59,7 +59,7 @@ export const uploadVehicleImage = async (req, res) => {
     }
 
     // Also update legacy image field for backward compatibility
-    vehicle.image = req.file.path;
+    vehicle.image = imageData.url;
 
     await vehicle.save();
 
@@ -67,8 +67,8 @@ export const uploadVehicleImage = async (req, res) => {
       success: true,
       message: 'Image uploaded successfully',
       data: {
-        imageUrl: req.file.path,
-        publicId: req.file.filename,
+        imageUrl: imageData.url,
+        publicId: imageData.publicId,
         vehicle: {
           id: vehicle._id,
           images: vehicle.images
