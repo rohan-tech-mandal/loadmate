@@ -64,7 +64,9 @@ const Login = () => {
     setLoading(false);
 
     if (result.success) {
-      navigate('/dashboard');
+      // Redirect based on user role
+      const redirectPath = result.data.role === 'admin' ? '/admin' : result.data.role === 'owner' ? '/owner' : '/dashboard';
+      navigate(redirectPath);
     } else {
       setError(result.message);
     }

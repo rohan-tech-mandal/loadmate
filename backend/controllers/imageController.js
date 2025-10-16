@@ -1,4 +1,4 @@
-import { vehicleImageUpload, deleteImage, getImageUrl, isCloudinaryConfigured } from '../config/cloudinary.js';
+import { upload as vehicleImageUpload, deleteImage, getImageUrl } from '../config/cloudinary.js';
 import Vehicle from '../models/Vehicle.js';
 
 // Upload vehicle image
@@ -24,16 +24,27 @@ export const uploadVehicleImage = async (req, res) => {
     }
 
     // Check if user owns the vehicle
+    console.log('🔍 Debug Info:');
+    console.log('Vehicle Owner ID:', vehicle.owner.toString());
+    console.log('User ID:', req.user.id);
+    console.log('User Role:', req.user.role);
+    console.log('Match:', vehicle.owner.toString() === req.user.id);
+    
     if (vehicle.owner.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to update this vehicle'
+        message: 'Not authorized to update this vehicle',
+        debug: {
+          vehicleOwner: vehicle.owner.toString(),
+          userId: req.user.id,
+          userRole: req.user.role
+        }
       });
     }
 
     const imageData = {
-      url: isCloudinaryConfigured ? req.file.path : `${req.protocol}://${req.get('host')}/uploads/vehicles/${req.file.filename}`,
-      publicId: isCloudinaryConfigured ? req.file.filename : req.file.filename
+      url: req.file.path, // Cloudinary URL
+      publicId: req.file.filename // Cloudinary public ID
     };
 
     // Update vehicle with new image
@@ -59,7 +70,7 @@ export const uploadVehicleImage = async (req, res) => {
     }
 
     // Also update legacy image field for backward compatibility
-    vehicle.image = imageData.url;
+    vehicle.image = req.file.path;
 
     await vehicle.save();
 
@@ -67,8 +78,8 @@ export const uploadVehicleImage = async (req, res) => {
       success: true,
       message: 'Image uploaded successfully',
       data: {
-        imageUrl: imageData.url,
-        publicId: imageData.publicId,
+        imageUrl: req.file.path,
+        publicId: req.file.filename,
         vehicle: {
           id: vehicle._id,
           images: vehicle.images

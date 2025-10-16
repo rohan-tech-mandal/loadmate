@@ -113,8 +113,8 @@ const addVehicle = asyncHandler(async (req, res) => {
     driverName,
     driverPhone,
     description,
-    approvalStatus: 'pending',
-    isAvailable: false, // Will be available after admin approval
+    approvalStatus: 'approved', // Auto-approve vehicles added by owners
+    isAvailable: true, // Make vehicles available immediately
   });
 
   // Add vehicle to owner's list

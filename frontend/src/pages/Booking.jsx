@@ -281,7 +281,7 @@ const Booking = () => {
                 </p>
                 <p className="text-sm text-muted-foreground">Distance: {formData.distance} km</p>
                 <p className="text-xl font-bold text-primary mt-2">
-                  Total Fare: ₹{calculateFare()}
+                  Total Fare: ₹{calculateFare}
                 </p>
               </CardContent>
             </Card>
@@ -898,7 +898,7 @@ const Booking = () => {
                         <Separator className="my-2" />
                         <div className="flex justify-between items-center">
                           <span className="font-bold text-foreground">Total Fare</span>
-                          <span className="text-2xl font-bold text-green-600">₹{calculateFare()}</span>
+                          <span className="text-2xl font-bold text-green-600">₹{calculateFare}</span>
                         </div>
                       </div>
                     </CardContent>

@@ -1,5 +1,6 @@
-import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config();
+import express from 'express';
 import cors from 'cors';
 import passport from 'passport';
 import session from 'express-session';
@@ -17,7 +18,7 @@ import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 import User from './models/User.js';
 
 // Load environment variables
-dotenv.config();
+
 
 // Get __dirname equivalent for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -32,8 +33,7 @@ const app = express();
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
-// Serve static files (for local image storage)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Static file serving removed - using Cloudinary only
 
 // CORS configuration - allows frontend to communicate with backend
 const allowedOrigins = [

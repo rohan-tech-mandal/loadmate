@@ -8,6 +8,7 @@ import {
   updateVehicleApproval,
   getAllBookings,
   updateBookingStatus,
+  getVehicleTypes,
 } from '../controllers/adminController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { admin } from '../middleware/adminMiddleware.js';
@@ -27,6 +28,7 @@ router.delete('/users/:id', deleteUser);
 
 // Vehicle management
 router.get('/vehicles', getAllVehicles);
+router.get('/vehicle-types', getVehicleTypes);
 router.put('/vehicles/:id/approval', updateVehicleApproval);
 
 // Booking management

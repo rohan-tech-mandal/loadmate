@@ -12,6 +12,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Truck, Package, DollarSign, Users, CheckCircle, X, Plus, MapPin, Calendar, Loader2 } from 'lucide-react';
+import ImageUpload from '../components/ImageUpload';
 
 const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
 const num = new Intl.NumberFormat('en-IN');
@@ -25,6 +26,7 @@ const OwnerDashboard = () => {
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [newVehicleId, setNewVehicleId] = useState(null);
 
   const [vehicleForm, setVehicleForm] = useState({
     type: 'Tata Ace',
@@ -40,7 +42,7 @@ const OwnerDashboard = () => {
     description: '',
   });
 
-  const { user, getAuthHeader } = useAuth();
+  const { user, getAuthHeader, clearCorruptedData } = useAuth();
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -48,6 +50,20 @@ const OwnerDashboard = () => {
     try {
       setLoading(true);
       setError('');
+      
+      // Check if token exists in user object, if not try to get it from localStorage
+      let token = user?.token;
+      if (!token) {
+        const storedUser = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        token = storedUser?.token;
+      }
+      
+      if (!token) {
+        setError('No authentication token found. Please clear your session and login again.');
+        setLoading(false);
+        return;
+      }
+      
       const [statsRes, vehiclesRes, bookingsRes, pendingRes] = await Promise.all([
         axios.get(`${API_URL}/owner/stats`, { headers: getAuthHeader() }),
         axios.get(`${API_URL}/owner/vehicles`, { headers: getAuthHeader() }),
@@ -81,7 +97,7 @@ const OwnerDashboard = () => {
   const handleAddVehicle = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(
+      const response = await axios.post(
         `${API_URL}/owner/vehicles`,
         {
           type: vehicleForm.type,
@@ -101,7 +117,10 @@ const OwnerDashboard = () => {
         { headers: getAuthHeader() }
       );
 
-      setShowAddVehicle(false);
+      // Store the new vehicle ID for image upload
+      setNewVehicleId(response.data._id);
+      
+      // Reset form
       setVehicleForm({
         type: 'Tata Ace',
         capacity: '',
@@ -115,7 +134,9 @@ const OwnerDashboard = () => {
         driverPhone: '',
         description: '',
       });
+      
       fetchOwnerData();
+      alert('Vehicle added successfully! You can now upload an image.');
     } catch (err) {
       alert(err?.response?.data?.message || 'Failed to add vehicle');
     }
@@ -173,6 +194,13 @@ const OwnerDashboard = () => {
     }
   };
 
+  const handleImageUploaded = (imageData) => {
+    // Refresh the vehicles data to show the new image
+    fetchOwnerData();
+    // Clear the new vehicle ID since image is uploaded
+    setNewVehicleId(null);
+  };
+
   const completedTripsCount = useMemo(
     () => bookings.filter((b) => b.status === 'delivered').length,
     [bookings]
@@ -199,7 +227,17 @@ const OwnerDashboard = () => {
 
         {error && (
           <Alert variant="destructive" className="mb-6">
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={clearCorruptedData}
+                className="ml-4"
+              >
+                Clear Session & Login
+              </Button>
+            </AlertDescription>
           </Alert>
         )}
 
@@ -223,9 +261,9 @@ const OwnerDashboard = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm opacity-90 mb-1">Approved</p>
-                    <p className="text-4xl font-bold">{num.format(stats.approvedVehicles || 0)}</p>
-                    <p className="text-xs mt-2">Pending: {num.format(stats.pendingVehicles || 0)}</p>
+                    <p className="text-sm opacity-90 mb-1">Total Vehicles</p>
+                    <p className="text-4xl font-bold">{num.format(stats.totalVehicles || 0)}</p>
+                    <p className="text-xs mt-2">All Available</p>
                   </div>
                   <CheckCircle className="h-12 w-12 opacity-80" />
                 </div>
@@ -309,11 +347,11 @@ const OwnerDashboard = () => {
                       </p>
                     </CardContent>
                   </Card>
-                  <Card className="bg-purple-50 border-purple-200">
+                  <Card className="bg-blue-50 border-blue-200">
                     <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground mb-1">Pending Approvals</p>
-                      <p className="text-3xl font-bold text-purple-600">
-                        {num.format(stats?.pendingVehicles || 0)}
+                      <p className="text-sm text-muted-foreground mb-1">Active Vehicles</p>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {num.format(stats?.activeVehicles || 0)}
                       </p>
                     </CardContent>
                   </Card>
@@ -708,6 +746,24 @@ const OwnerDashboard = () => {
               </Card>
             )}
 
+            {/* Image Upload Section - Show after vehicle is created */}
+            {newVehicleId && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Upload Vehicle Image</CardTitle>
+                  <CardDescription>
+                    Add a photo of your vehicle to make it more appealing to customers
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ImageUpload 
+                    vehicleId={newVehicleId}
+                    onImageUploaded={handleImageUploaded}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
             {/* Vehicles List */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {vehicles.map((vehicle) => (
@@ -715,11 +771,8 @@ const OwnerDashboard = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{vehicle.type}</CardTitle>
-                      <Badge 
-                        variant={vehicle.approvalStatus === 'approved' ? 'default' : 
-                                vehicle.approvalStatus === 'rejected' ? 'destructive' : 'secondary'}
-                      >
-                        {vehicle.approvalStatus}
+                      <Badge variant="default">
+                        Available
                       </Badge>
                     </div>
                   </CardHeader>
@@ -749,14 +802,37 @@ const OwnerDashboard = () => {
                       </p>
                     </div>
 
-                    <Button
-                      onClick={() => handleDeleteVehicle(vehicle._id)}
-                      variant="outline"
-                      className="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Delete Vehicle
-                    </Button>
+                    {/* Vehicle Image Display */}
+                    {vehicle.images?.primary?.url || vehicle.image ? (
+                      <div className="mb-4">
+                        <img
+                          src={vehicle.images?.primary?.url || vehicle.image}
+                          alt={`${vehicle.type} - ${vehicle.registrationNumber}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                      </div>
+                    ) : (
+                      <div className="mb-4 bg-gray-100 rounded-lg h-32 flex items-center justify-center">
+                        <span className="text-gray-500">No image uploaded</span>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <ImageUpload 
+                        vehicleId={vehicle._id}
+                        onImageUploaded={handleImageUploaded}
+                        existingImages={vehicle.images}
+                      />
+                      
+                      <Button
+                        onClick={() => handleDeleteVehicle(vehicle._id)}
+                        variant="outline"
+                        className="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Delete Vehicle
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

@@ -169,6 +169,44 @@ const updateBookingStatus = asyncHandler(async (req, res) => {
   res.json(updatedBooking);
 });
 
+/**
+ * @desc    Get default vehicle types for fleet showcase
+ * @route   GET /api/admin/vehicle-types
+ * @access  Private/Admin
+ */
+const getVehicleTypes = asyncHandler(async (req, res) => {
+  const vehicleTypes = ['Tata Ace', 'Pickup Truck', 'Mini Truck', 'Container Truck', 'Trailer'];
+  
+  // Get one vehicle of each type with their images
+  const vehiclesByType = {};
+  
+  for (const type of vehicleTypes) {
+    const vehicle = await Vehicle.findOne({ 
+      type, 
+      $or: [
+        { approvalStatus: { $exists: false } }, // Seeded vehicles
+        { approvalStatus: 'approved' }
+      ]
+    }).sort({ createdAt: 1 }); // Get the first/oldest vehicle of each type
+    
+    if (vehicle) {
+      vehiclesByType[type] = {
+        id: vehicle._id,
+        type: vehicle.type,
+        capacity: vehicle.capacity,
+        dimensions: vehicle.dimensions,
+        baseFarePerKm: vehicle.baseFarePerKm,
+        loadingCharge: vehicle.loadingCharge,
+        description: vehicle.description,
+        image: vehicle.images?.primary?.url || vehicle.image,
+        hasImage: !!(vehicle.images?.primary?.url || vehicle.image)
+      };
+    }
+  }
+  
+  res.json(vehiclesByType);
+});
+
 export {
   getDashboardStats,
   getAllUsers,
@@ -178,4 +216,5 @@ export {
   updateVehicleApproval,
   getAllBookings,
   updateBookingStatus,
+  getVehicleTypes,
 };

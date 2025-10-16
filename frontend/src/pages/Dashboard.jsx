@@ -195,8 +195,8 @@ const Dashboard = () => {
         <div className="mb-8">
           <h3 className="text-lg font-bold text-foreground mb-4">Quick Actions</h3>
           <div className="grid md:grid-cols-3 gap-4">
-            <Card asChild className="hover:shadow-xl transition-all duration-200 hover:-translate-y-1 bg-gradient-to-br from-primary to-primary-600 text-white border-0">
-              <Link to="/booking">
+            <Link to="/booking">
+              <Card className="hover:shadow-xl transition-all duration-200 hover:-translate-y-1 bg-gradient-to-br from-primary to-primary-600 text-white border-0 cursor-pointer">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <Truck className="h-12 w-12" />
@@ -206,11 +206,11 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </CardContent>
-              </Link>
-            </Card>
+              </Card>
+            </Link>
 
-            <Card asChild className="hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-              <Link to="/vehicles">
+            <Link to="/vehicles">
+              <Card className="hover:shadow-xl transition-all duration-200 hover:-translate-y-1 cursor-pointer">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <Package className="h-12 w-12 text-primary" />
@@ -220,11 +220,11 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </CardContent>
-              </Link>
-            </Card>
+              </Card>
+            </Link>
 
-            <Card asChild className="hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border-2 border-primary/20">
-              <Link to="/register-owner">
+            <Link to="/register-owner">
+              <Card className="hover:shadow-xl transition-all duration-200 hover:-translate-y-1 border-2 border-primary/20 cursor-pointer">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <User className="h-12 w-12 text-primary" />
@@ -234,8 +234,8 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </CardContent>
-              </Link>
-            </Card>
+              </Card>
+            </Link>
           </div>
         </div>
 
@@ -330,11 +330,11 @@ const Dashboard = () => {
                   : 'Try selecting a different filter or create a new booking'}
               </p>
               {filter === 'all' && (
-                <Button asChild size="lg" className="text-lg px-8 py-4">
-                  <Link to="/booking">
+                <Link to="/booking">
+                  <Button size="lg" className="text-lg px-8 py-4">
                     Create Your First Booking
-                  </Link>
-                </Button>
+                  </Button>
+                </Link>
               )}
             </CardContent>
           </Card>

@@ -12,8 +12,12 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    try {
+      logout();
+    } catch (error) {
+      localStorage.clear();
+      window.location.href = '/';
+    }
   };
 
   return (

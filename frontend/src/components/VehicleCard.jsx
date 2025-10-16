@@ -25,9 +25,25 @@ const VehicleCard = memo(({ vehicle, onSelect }) => {
 
   return (
     <Card className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-primary/50">
-      {/* Vehicle Image Placeholder */}
+      {/* Vehicle Image */}
       <div className="relative overflow-hidden rounded-t-lg">
-        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-blue-100 h-48 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+        {vehicle.images?.primary?.url || vehicle.image ? (
+          <img
+            src={vehicle.images?.primary?.url || vehicle.image}
+            alt={`${vehicle.type} - ${vehicle.registrationNumber}`}
+            className="w-full h-48 object-contain group-hover:scale-110 transition-transform duration-300"
+            onError={(e) => {
+              // Fallback to emoji if image fails to load
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        <div 
+          className={`bg-gradient-to-br from-primary/10 via-primary/5 to-blue-100 h-48 flex items-center justify-center group-hover:scale-105 transition-transform duration-300 ${
+            vehicle.images?.primary?.url || vehicle.image ? 'hidden' : 'flex'
+          }`}
+        >
           <div className="text-8xl group-hover:scale-110 transition-transform duration-300 animate-float">🚚</div>
         </div>
         <div className="absolute top-4 right-4">

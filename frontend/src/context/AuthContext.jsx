@@ -18,7 +18,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
-      setUser(JSON.parse(userInfo));
+      const parsedUser = JSON.parse(userInfo);
+      setUser(parsedUser);
     }
     
     // Handle Google OAuth callback
@@ -94,20 +95,60 @@ export const AuthProvider = ({ children }) => {
    * Logout user
    */
   const logout = () => {
+    console.log('AuthContext - Logging out user');
     localStorage.removeItem('userInfo');
     setUser(null);
+    // Force a page reload to clear any stale state
+    window.location.href = '/';
+  };
+
+  /**
+   * Update user data (useful after role changes)
+   */
+  const updateUser = (updatedUserData) => {
+    // Get current user from localStorage to ensure we have the latest data
+    const currentUserInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    
+    // Ensure we preserve the token and other important fields
+    const newUserInfo = { 
+      ...currentUserInfo,  // Use localStorage data as base
+      ...updatedUserData,
+      // Explicitly preserve the token if it exists
+      token: currentUserInfo?.token || updatedUserData?.token || user?.token
+    };
+    
+    localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
+    setUser(newUserInfo);
   };
 
   /**
    * Get auth header for API requests
    */
   const getAuthHeader = () => {
-    if (user?.token) {
+    // Check user object first
+    let token = user?.token;
+    
+    // If no token in user object, check localStorage
+    if (!token) {
+      const storedUser = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      token = storedUser?.token;
+    }
+    
+    if (token) {
       return {
-        Authorization: `Bearer ${user.token}`,
+        Authorization: `Bearer ${token}`,
       };
     }
     return {};
+  };
+
+  /**
+   * Clear corrupted user data and redirect to login
+   */
+  const clearCorruptedData = () => {
+    localStorage.removeItem('userInfo');
+    setUser(null);
+    window.location.href = '/login';
   };
 
   const value = {
@@ -117,7 +158,9 @@ export const AuthProvider = ({ children }) => {
     login,
     loginWithGoogle,
     logout,
+    updateUser,
     getAuthHeader,
+    clearCorruptedData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -129,7 +172,18 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    console.warn('useAuth must be used within AuthProvider');
+    // Return a default context during hot reload to prevent crashes
+    return {
+      user: null,
+      loading: false,
+      register: async () => ({ success: false, message: 'Auth not initialized' }),
+      login: async () => ({ success: false, message: 'Auth not initialized' }),
+      loginWithGoogle: () => {},
+      logout: () => {},
+      updateUser: () => {},
+      getAuthHeader: () => ({}),
+    };
   }
   return context;
 };

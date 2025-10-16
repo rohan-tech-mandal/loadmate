@@ -24,7 +24,7 @@ const RegisterOwnerNew = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { register } = useAuth();
+  const { register, updateUser } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -81,8 +81,26 @@ const RegisterOwnerNew = () => {
         });
 
         if (response.ok) {
-          alert('Successfully registered as vehicle owner! You can now start adding vehicles.');
-          navigate('/owner');
+          const updatedUserData = await response.json();
+          
+          // Update the user info in context, preserving the original token
+          const userUpdateData = {
+            _id: updatedUserData._id,
+            name: updatedUserData.name,
+            email: updatedUserData.email,
+            role: updatedUserData.role,
+            vehicleOwnerDetails: updatedUserData.vehicleOwnerDetails,
+            // Keep the original token from the registration result
+            token: result.data.token
+          };
+          
+          updateUser(userUpdateData);
+          
+          // Wait a bit to ensure the context is updated before navigation
+          setTimeout(() => {
+            alert('Successfully registered as vehicle owner! You can now start adding vehicles.');
+            navigate('/owner');
+          }, 100);
         } else {
           const errorData = await response.json();
           setError(errorData.message || 'Failed to register as owner');
@@ -265,7 +283,7 @@ const RegisterOwnerNew = () => {
                   <ul className="text-sm text-blue-700 space-y-1 mt-2">
                     <li>✓ Your account will be created as a vehicle owner</li>
                     <li>✓ You can add your vehicles to the platform</li>
-                    <li>✓ Admin will verify your credentials</li>
+                    <li>✓ Your vehicles will be available immediately</li>
                     <li>✓ Start receiving booking requests and earning money</li>
                   </ul>
                 </AlertDescription>
